@@ -2,18 +2,24 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Krishna Mantra - Koder</title>
+<title>Krishna Mantra Counter</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     text-align: center;
     padding: 30px;
-    transition: background-color 0.8s, font-family 0.8s;
+    background-color: #fdf6e3;
+    transition: background-color 0.6s, color 0.6s;
+  }
+
+  .dark {
+    background-color: #1b1b1b;
+    color: white;
   }
 
   #mantraImage {
     width: 90%;
-    max-width: 450px;
+    max-width: 420px;
     margin-bottom: 25px;
     border-radius: 20px;
     background-color: #fff7e6;
@@ -25,54 +31,58 @@
     font-size: 48px;
     font-weight: bold;
     margin-top: 20px;
-    color: #2c3e50;
-    transition: font-family 0.8s;
   }
 
   #mantraBox {
     margin-top: 30px;
-    font-size: 36px;
+    font-size: 32px;
     line-height: 2;
     font-weight: bold;
-    color: #2c3e50;
     white-space: pre-line;
-    transition: font-family 0.8s;
   }
 
   #progressContainer {
     width: 95%;
-    background-color: #ddd;
+    background-color: #ccc;
     margin: 30px auto;
     border-radius: 20px;
     overflow: hidden;
-    height: 60px;
+    height: 55px;
   }
+
   #progressBar {
     width: 0%;
-    height: 60px;
+    height: 55px;
     background-color: #27ae60;
-    text-align: center;
     color: white;
-    line-height: 60px;
     font-weight: bold;
+    line-height: 55px;
     font-size: 24px;
   }
 
   button {
-    font-size: 26px;
-    padding: 16px 32px;
-    margin: 12px;
+    font-size: 22px;
+    padding: 14px 26px;
+    margin: 10px;
     border: none;
     border-radius: 10px;
     background-color: #3498db;
     color: white;
   }
   button:hover { background-color: #2980b9; cursor: pointer; }
+
+  /* Digital Japa Mala */
+  #beads {
+    margin-top: 20px;
+    font-size: 30px;
+    letter-spacing: 4px;
+    min-height: 40px;
+  }
 </style>
 </head>
 <body>
 
-<h2>Krishna Mantra</h2>
+<h2>Krishna Mantra Counter</h2>
 
 <img id="mantraImage" src="./mantra_image.webp" alt="Mantra Image">
 
@@ -86,9 +96,21 @@
 
 <audio id="mantraAudio" src="./Mantra.m4a" preload="auto"></audio>
 
+<!-- Controls -->
 <button onclick="startAuto()">Start Audio</button>
 <button id="pauseBtn" onclick="pauseResume()">Pause</button>
 <button onclick="resetCounter()">Reset</button>
+<br>
+
+<!-- NEW CONTROLS -->
+<label>🔊 Volume:</label>
+<input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
+<br><br>
+
+<button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+<button onclick="toggleAutoRepeat()">🔁 Auto Repeat: <span id='repeatStatus'>OFF</span></button>
+
+<div id="beads"></div>
 
 <script>
 let count = 0;
@@ -96,28 +118,30 @@ const total = 108;
 const mantra = "దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే \nదేహిమే తనయం కృష్ణ త్వమహం శరణం గతః";
 const audio = document.getElementById("mantraAudio");
 let isPaused = false;
+let autoRepeat = false;
 
-// Background colors and fonts
+// Background + Font cycling
 const colors = ["#fdf6e3","#fde2e2","#e3f6fd","#e2fde2","#f6e3fd","#fff7e6"];
-const fonts = ["Arial, sans-serif","Georgia, serif","Tahoma, sans-serif","Courier New, monospace","Verdana, sans-serif","Impact, sans-serif"];
+const fonts = ["Arial","Georgia","Tahoma","Courier New","Verdana","Impact"];
 
 function updateDisplay() {
-    document.getElementById("countDisplay").innerText = count + " / " + total;
-    document.getElementById("mantraBox").innerText = mantra;
+    document.getElementById("countDisplay").innerText = `${count} / ${total}`;
+
     let progressPercent = Math.round((count / total) * 100);
     document.getElementById("progressBar").style.width = progressPercent + "%";
     document.getElementById("progressBar").innerText = progressPercent + "%";
 
-    // Change background and font
     const color = colors[count % colors.length];
     const font = fonts[count % fonts.length];
     document.body.style.backgroundColor = color;
-    document.getElementById("countDisplay").style.fontFamily = font;
-    document.getElementById("mantraBox").style.fontFamily = font;
+    document.body.style.fontFamily = font;
+
+    let beads = "🔵".repeat(count);
+    document.getElementById("beads").innerHTML = beads.substring(beads.length - 40);
 }
 
 function startAuto() {
-    if (count >= total) { alert("You have completed all 108 repetitions!"); return; }
+    if (count >= total) count = 0;
     isPaused = false;
     audio.play();
     document.getElementById("pauseBtn").innerText = "Pause";
@@ -126,28 +150,37 @@ function startAuto() {
 function pauseResume() {
     const btn = document.getElementById("pauseBtn");
     if (!isPaused) {
-        audio.pause();
         isPaused = true;
+        audio.pause();
         btn.innerText = "Resume";
-        btn.style.backgroundColor = "#2980b9";
     } else {
-        audio.play();
         isPaused = false;
+        audio.play();
         btn.innerText = "Pause";
-        btn.style.backgroundColor = "#3498db";
     }
 }
 
-// Auto increment when audio ends
 audio.addEventListener('ended', () => {
     if (isPaused) return;
+
     count++;
     updateDisplay();
+
+    // Vibration (mobile)
+    if (navigator.vibrate) navigator.vibrate(50);
+
     if (count < total) {
         audio.currentTime = 0;
         audio.play();
     } else {
-        alert("You have completed all 108 repetitions!");
+        if (autoRepeat) {
+            count = 0;
+            updateDisplay();
+            audio.currentTime = 0;
+            audio.play();
+        } else {
+            alert("You completed 108 repetitions!");
+        }
     }
 });
 
@@ -156,11 +189,24 @@ function resetCounter() {
     updateDisplay();
     audio.pause();
     audio.currentTime = 0;
-    document.body.style.backgroundColor = "#fdf6e3"; // reset background
     isPaused = false;
     document.getElementById("pauseBtn").innerText = "Pause";
-    document.getElementById("pauseBtn").style.backgroundColor = "#3498db";
 }
+
+function changeVolume(value) {
+    audio.volume = value;
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+}
+
+function toggleAutoRepeat() {
+    autoRepeat = !autoRepeat;
+    document.getElementById("repeatStatus").innerText = autoRepeat ? "ON" : "OFF";
+}
+
+updateDisplay();
 </script>
 
 </body>
