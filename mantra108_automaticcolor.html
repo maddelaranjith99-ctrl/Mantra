@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Krishna Mantra Counter</title>
+
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -12,6 +13,7 @@
     transition: background-color 0.6s, color 0.6s;
   }
 
+  /* Dark mode */
   .dark {
     background-color: #1b1b1b;
     color: white;
@@ -69,9 +71,13 @@
     background-color: #3498db;
     color: white;
   }
-  button:hover { background-color: #2980b9; cursor: pointer; }
 
-  /* Digital Japa Mala */
+  button:hover {
+    background-color: #2980b9;
+    cursor: pointer;
+  }
+
+  /* Japa Beads */
   #beads {
     margin-top: 20px;
     font-size: 30px;
@@ -80,68 +86,81 @@
   }
 </style>
 </head>
+
 <body>
 
 <h2>Krishna Mantra Counter</h2>
 
 <img id="mantraImage" src="./mantra_image.webp" alt="Mantra Image">
 
+<!-- Count Display -->
 <div id="countDisplay">0 / 108</div>
 
+<!-- Progress Bar -->
 <div id="progressContainer">
   <div id="progressBar">0%</div>
 </div>
 
-<div id="mantraBox"></div>
+<!-- Mantra -->
+<div id="mantraBox">
+దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే  
+దేహిమే తనయం కృష్ణ త్వమహం శరణం గతః
+</div>
 
+<!-- Audio -->
 <audio id="mantraAudio" src="./Mantra.m4a" preload="auto"></audio>
 
-<!-- Controls -->
+<!-- Buttons -->
 <button onclick="startAuto()">Start Audio</button>
 <button id="pauseBtn" onclick="pauseResume()">Pause</button>
 <button onclick="resetCounter()">Reset</button>
-<br>
 
-<!-- NEW CONTROLS -->
+<br><br>
+
+<!-- NEW UI CONTROLS -->
 <label>🔊 Volume:</label>
 <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
+
 <br><br>
 
 <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+
 <button onclick="toggleAutoRepeat()">🔁 Auto Repeat: <span id='repeatStatus'>OFF</span></button>
 
+<!-- Digital Japa Mala -->
 <div id="beads"></div>
 
 <script>
 let count = 0;
 const total = 108;
-const mantra = "దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే \nదేహిమే తనయం కృష్ణ త్వమహం శరణం గతః";
-const audio = document.getElementById("mantraAudio");
 let isPaused = false;
 let autoRepeat = false;
 
-// Background + Font cycling
+const mantra = 
+"దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే \nదేహిమే తనయం కృష్ణ త్వమహం శరణం గతః";
+
+const audio = document.getElementById("mantraAudio");
+
 const colors = ["#fdf6e3","#fde2e2","#e3f6fd","#e2fde2","#f6e3fd","#fff7e6"];
 const fonts = ["Arial","Georgia","Tahoma","Courier New","Verdana","Impact"];
 
+/* Update count, progress bar, colors, beads */
 function updateDisplay() {
     document.getElementById("countDisplay").innerText = `${count} / ${total}`;
 
-    let progressPercent = Math.round((count / total) * 100);
-    document.getElementById("progressBar").style.width = progressPercent + "%";
-    document.getElementById("progressBar").innerText = progressPercent + "%";
+    let pct = Math.round((count / total) * 100);
+    document.getElementById("progressBar").style.width = pct + "%";
+    document.getElementById("progressBar").innerText = pct + "%";
 
-    const color = colors[count % colors.length];
-    const font = fonts[count % fonts.length];
-    document.body.style.backgroundColor = color;
-    document.body.style.fontFamily = font;
+    document.body.style.backgroundColor = colors[count % colors.length];
+    document.body.style.fontFamily = fonts[count % fonts.length];
 
-    let beads = "🔵".repeat(count);
-    document.getElementById("beads").innerHTML = beads.substring(beads.length - 40);
+    document.getElementById("beads").innerHTML = "🔵".repeat(Math.min(count, 40));
 }
 
 function startAuto() {
     if (count >= total) count = 0;
+
     isPaused = false;
     audio.play();
     document.getElementById("pauseBtn").innerText = "Pause";
@@ -149,6 +168,7 @@ function startAuto() {
 
 function pauseResume() {
     const btn = document.getElementById("pauseBtn");
+
     if (!isPaused) {
         isPaused = true;
         audio.pause();
@@ -166,8 +186,7 @@ audio.addEventListener('ended', () => {
     count++;
     updateDisplay();
 
-    // Vibration (mobile)
-    if (navigator.vibrate) navigator.vibrate(50);
+    if (navigator.vibrate) navigator.vibrate(40);
 
     if (count < total) {
         audio.currentTime = 0;
