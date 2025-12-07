@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>krishna Mantra - Koder</title>
+<title>Krishna Mantra - Koder</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -72,7 +72,7 @@
 </head>
 <body>
 
-<h2>krishna Mantra</h2>
+<h2>Krishna Mantra</h2>
 
 <img id="mantraImage" src="./mantra_image.webp" alt="Mantra Image">
 
@@ -87,6 +87,7 @@
 <audio id="mantraAudio" src="./Mantra.m4a" preload="auto"></audio>
 
 <button onclick="startAuto()">Start Audio</button>
+<button id="pauseBtn" onclick="pauseResume()">Pause</button>
 <button onclick="resetCounter()">Reset</button>
 
 <script>
@@ -94,7 +95,9 @@ let count = 0;
 const total = 108;
 const mantra = "దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే \nదేహిమే తనయం కృష్ణ త్వమహం శరణం గతః";
 const audio = document.getElementById("mantraAudio");
+let isPaused = false;
 
+// Background colors and fonts
 const colors = ["#fdf6e3","#fde2e2","#e3f6fd","#e2fde2","#f6e3fd","#fff7e6"];
 const fonts = ["Arial, sans-serif","Georgia, serif","Tahoma, sans-serif","Courier New, monospace","Verdana, sans-serif","Impact, sans-serif"];
 
@@ -115,12 +118,29 @@ function updateDisplay() {
 
 function startAuto() {
     if (count >= total) { alert("You have completed all 108 repetitions!"); return; }
-    audio.currentTime = 0;
+    isPaused = false;
     audio.play();
+    document.getElementById("pauseBtn").innerText = "Pause";
+}
+
+function pauseResume() {
+    const btn = document.getElementById("pauseBtn");
+    if (!isPaused) {
+        audio.pause();
+        isPaused = true;
+        btn.innerText = "Resume";
+        btn.style.backgroundColor = "#2980b9";
+    } else {
+        audio.play();
+        isPaused = false;
+        btn.innerText = "Pause";
+        btn.style.backgroundColor = "#3498db";
+    }
 }
 
 // Auto increment when audio ends
 audio.addEventListener('ended', () => {
+    if (isPaused) return;
     count++;
     updateDisplay();
     if (count < total) {
@@ -137,6 +157,9 @@ function resetCounter() {
     audio.pause();
     audio.currentTime = 0;
     document.body.style.backgroundColor = "#fdf6e3"; // reset background
+    isPaused = false;
+    document.getElementById("pauseBtn").innerText = "Pause";
+    document.getElementById("pauseBtn").style.backgroundColor = "#3498db";
 }
 </script>
 
