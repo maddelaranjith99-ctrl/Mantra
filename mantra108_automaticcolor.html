@@ -3,25 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <title>Krishna Mantra Counter</title>
-
 <style>
   body {
     font-family: Arial, sans-serif;
     text-align: center;
     padding: 30px;
-    background-color: #fdf6e3;
     transition: background-color 0.6s, color 0.6s;
+    background-color: #fdf6e3;
+    color: #2c3e50;
   }
 
-  /* Dark mode */
-  .dark {
-    background-color: #1b1b1b;
-    color: white;
+  body.dark {
+    background-color: #111;
+    color: #e0e0e0;
+  }
+
+  body.dark #mantraBox,
+  body.dark #countDisplay {
+    color: #f1f1f1;
+  }
+
+  body.dark button {
+    background-color: #444 !important;
+    color: #f1f1f1 !important;
+  }
+
+  body.dark button:hover {
+    background-color: #666 !important;
+  }
+
+  body.dark #progressContainer {
+    background-color: #333 !important;
+  }
+
+  body.dark #progressBar {
+    background-color: #27ae60 !important;
   }
 
   #mantraImage {
     width: 90%;
-    max-width: 420px;
+    max-width: 450px;
     margin-bottom: 25px;
     border-radius: 20px;
     background-color: #fff7e6;
@@ -37,7 +58,7 @@
 
   #mantraBox {
     margin-top: 30px;
-    font-size: 32px;
+    font-size: 36px;
     line-height: 2;
     font-weight: bold;
     white-space: pre-line;
@@ -45,122 +66,98 @@
 
   #progressContainer {
     width: 95%;
-    background-color: #ccc;
+    background-color: #ddd;
     margin: 30px auto;
     border-radius: 20px;
     overflow: hidden;
-    height: 55px;
+    height: 60px;
   }
 
+  /* Glowing Progress Bar */
   #progressBar {
     width: 0%;
-    height: 55px;
+    height: 60px;
     background-color: #27ae60;
+    text-align: center;
     color: white;
+    line-height: 60px;
     font-weight: bold;
-    line-height: 55px;
     font-size: 24px;
+    transition: width 0.6s ease-in-out;
+    box-shadow: 0 0 12px rgba(39,174,96,0.6), 
+                0 0 25px rgba(39,174,96,0.4), 
+                inset 0 0 10px rgba(255,255,255,0.4);
+  }
+
+  @keyframes glowPulse {
+    0% { box-shadow: 0 0 10px #27ae60; }
+    50% { box-shadow: 0 0 25px #2ecc71; }
+    100% { box-shadow: 0 0 10px #27ae60; }
+  }
+
+  #progressBar.glow {
+    animation: glowPulse 2s infinite;
   }
 
   button {
-    font-size: 22px;
-    padding: 14px 26px;
-    margin: 10px;
+    font-size: 26px;
+    padding: 16px 32px;
+    margin: 12px;
     border: none;
     border-radius: 10px;
     background-color: #3498db;
     color: white;
+    transition: background-color 0.3s;
   }
 
-  button:hover {
-    background-color: #2980b9;
-    cursor: pointer;
-  }
+  button:hover { background-color: #2980b9; cursor: pointer; }
 
-  /* Japa Beads */
-  #beads {
-    margin-top: 20px;
-    font-size: 30px;
-    letter-spacing: 4px;
-    min-height: 40px;
+  #darkToggle {
+    background-color: #555;
   }
 </style>
 </head>
-
 <body>
 
-<h2>Krishna Mantra Counter</h2>
+<h2>Krishna Mantra</h2>
+
+<button id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
 
 <img id="mantraImage" src="./mantra_image.webp" alt="Mantra Image">
 
-<!-- Count Display -->
 <div id="countDisplay">0 / 108</div>
 
-<!-- Progress Bar -->
 <div id="progressContainer">
   <div id="progressBar">0%</div>
 </div>
 
-<!-- Mantra -->
-<div id="mantraBox">
-దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే  
-దేహిమే తనయం కృష్ణ త్వమహం శరణం గతః
-</div>
+<div id="mantraBox"></div>
 
-<!-- Audio -->
 <audio id="mantraAudio" src="./Mantra.m4a" preload="auto"></audio>
+<audio id="bellAudio" src="./bell.m4a" preload="auto"></audio>
 
-<!-- Buttons -->
 <button onclick="startAuto()">Start Audio</button>
 <button id="pauseBtn" onclick="pauseResume()">Pause</button>
 <button onclick="resetCounter()">Reset</button>
 
-<br><br>
-
-<!-- NEW UI CONTROLS -->
-<label>🔊 Volume:</label>
-<input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
-
-<br><br>
-
-<button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
-
-<button onclick="toggleAutoRepeat()">🔁 Auto Repeat: <span id='repeatStatus'>OFF</span></button>
-
-<!-- Digital Japa Mala -->
-<div id="beads"></div>
-
 <script>
 let count = 0;
 const total = 108;
-let isPaused = false;
-let autoRepeat = false;
-
-const mantra = 
-"దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే \nదేహిమే తనయం కృష్ణ త్వమహం శరణం గతః";
-
+const mantra = "దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే \nదేహిమే తనయం కృష్ణ త్వమహం శరణం గతః";
 const audio = document.getElementById("mantraAudio");
+let isPaused = false;
 
-const colors = ["#fdf6e3","#fde2e2","#e3f6fd","#e2fde2","#f6e3fd","#fff7e6"];
-const fonts = ["Arial","Georgia","Tahoma","Courier New","Verdana","Impact"];
-
-/* Update count, progress bar, colors, beads */
 function updateDisplay() {
-    document.getElementById("countDisplay").innerText = `${count} / ${total}`;
+    document.getElementById("countDisplay").innerText = count + " / " + total;
+    document.getElementById("mantraBox").innerText = mantra;
 
-    let pct = Math.round((count / total) * 100);
-    document.getElementById("progressBar").style.width = pct + "%";
-    document.getElementById("progressBar").innerText = pct + "%";
-
-    document.body.style.backgroundColor = colors[count % colors.length];
-    document.body.style.fontFamily = fonts[count % fonts.length];
-
-    document.getElementById("beads").innerHTML = "🔵".repeat(Math.min(count, 40));
+    let progressPercent = Math.round((count / total) * 100);
+    document.getElementById("progressBar").style.width = progressPercent + "%";
+    document.getElementById("progressBar").innerText = progressPercent + "%";
 }
 
 function startAuto() {
-    if (count >= total) count = 0;
-
+    if (count >= total) { alert("Completed 108!"); return; }
     isPaused = false;
     audio.play();
     document.getElementById("pauseBtn").innerText = "Pause";
@@ -168,38 +165,32 @@ function startAuto() {
 
 function pauseResume() {
     const btn = document.getElementById("pauseBtn");
-
     if (!isPaused) {
-        isPaused = true;
         audio.pause();
+        isPaused = true;
         btn.innerText = "Resume";
     } else {
-        isPaused = false;
         audio.play();
+        isPaused = false;
         btn.innerText = "Pause";
     }
 }
 
 audio.addEventListener('ended', () => {
     if (isPaused) return;
-
     count++;
     updateDisplay();
 
-    if (navigator.vibrate) navigator.vibrate(40);
+    // glowing animation
+    document.getElementById("progressBar").classList.add("glow");
 
     if (count < total) {
         audio.currentTime = 0;
         audio.play();
     } else {
-        if (autoRepeat) {
-            count = 0;
-            updateDisplay();
-            audio.currentTime = 0;
-            audio.play();
-        } else {
-            alert("You completed 108 repetitions!");
-        }
+        // gentle bell at 108
+        document.getElementById("bellAudio").play();
+        alert("You have completed all 108 repetitions!");
     }
 });
 
@@ -210,22 +201,14 @@ function resetCounter() {
     audio.currentTime = 0;
     isPaused = false;
     document.getElementById("pauseBtn").innerText = "Pause";
-}
 
-function changeVolume(value) {
-    audio.volume = value;
+    // remove glow
+    document.getElementById("progressBar").classList.remove("glow");
 }
 
 function toggleDarkMode() {
     document.body.classList.toggle("dark");
 }
-
-function toggleAutoRepeat() {
-    autoRepeat = !autoRepeat;
-    document.getElementById("repeatStatus").innerText = autoRepeat ? "ON" : "OFF";
-}
-
-updateDisplay();
 </script>
 
 </body>
