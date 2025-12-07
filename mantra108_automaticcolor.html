@@ -2,214 +2,387 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Krishna Mantra Counter</title>
+<title>Krishna Mantra — Simple Counter</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
+  :root{
+    --primary:#27ae60;
+    --button:#3498db;
+    --button-hover:#2980b9;
+    --text:#2c3e50;
+    --bg:#fdf6e3;
+  }
+
   body {
-    font-family: Arial, sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     text-align: center;
-    padding: 30px;
-    transition: background-color 0.6s, color 0.6s;
-    background-color: #fdf6e3;
-    color: #2c3e50;
+    padding: 28px;
+    margin:0;
+    min-height:100vh;
+    box-sizing:border-box;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.5s, color 0.4s, font-family 0.4s;
   }
 
+  /* Dark mode */
   body.dark {
-    background-color: #111;
-    color: #e0e0e0;
+    background-color: #0e0e10;     /* dark bg */
+    color: #e9eef2;                /* light text */
   }
 
-  body.dark #mantraBox,
-  body.dark #countDisplay {
-    color: #f1f1f1;
+  .container {
+    max-width:760px;
+    margin:0 auto;
   }
 
-  body.dark button {
-    background-color: #444 !important;
-    color: #f1f1f1 !important;
-  }
-
-  body.dark button:hover {
-    background-color: #666 !important;
-  }
-
-  body.dark #progressContainer {
-    background-color: #333 !important;
-  }
-
-  body.dark #progressBar {
-    background-color: #27ae60 !important;
+  h1 {
+    margin: 6px 0 18px;
+    font-size: 22px;
+    font-weight:600;
   }
 
   #mantraImage {
-    width: 90%;
-    max-width: 450px;
-    margin-bottom: 25px;
-    border-radius: 20px;
+    width: 86%;
+    max-width: 420px;
+    border-radius: 14px;
     background-color: #fff7e6;
-    padding: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    padding: 8px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   }
 
   #countDisplay {
-    font-size: 48px;
-    font-weight: bold;
-    margin-top: 20px;
+    font-size: 42px;
+    font-weight:700;
+    margin: 6px 0 12px;
   }
 
   #mantraBox {
-    margin-top: 30px;
-    font-size: 36px;
-    line-height: 2;
-    font-weight: bold;
+    margin-top: 18px;
+    font-size: 22px;
+    line-height: 1.9;
+    font-weight:700;
     white-space: pre-line;
+    padding: 6px 8px;
+    border-radius: 10px;
   }
 
   #progressContainer {
     width: 95%;
-    background-color: #ddd;
-    margin: 30px auto;
-    border-radius: 20px;
+    max-width:720px;
+    background-color: #e6e6e6;
+    margin: 18px auto;
+    border-radius: 999px;
     overflow: hidden;
-    height: 60px;
+    height: 56px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.05);
   }
 
-  /* Glowing Progress Bar */
   #progressBar {
     width: 0%;
-    height: 60px;
-    background-color: #27ae60;
+    height: 56px;
+    background: linear-gradient(90deg,var(--primary), #2ecc71);
     text-align: center;
     color: white;
-    line-height: 60px;
-    font-weight: bold;
-    font-size: 24px;
-    transition: width 0.6s ease-in-out;
-    box-shadow: 0 0 12px rgba(39,174,96,0.6), 
-                0 0 25px rgba(39,174,96,0.4), 
-                inset 0 0 10px rgba(255,255,255,0.4);
+    line-height: 56px;
+    font-weight:700;
+    font-size: 20px;
+    transition: width 0.6s cubic-bezier(.2,.9,.2,1);
+    box-shadow: inset 0 -6px 16px rgba(255,255,255,0.08);
   }
 
+  /* stronger glow animation (visible) */
   @keyframes glowPulse {
-    0% { box-shadow: 0 0 10px #27ae60; }
-    50% { box-shadow: 0 0 25px #2ecc71; }
-    100% { box-shadow: 0 0 10px #27ae60; }
+    0% { box-shadow: 0 0 12px rgba(39,174,96,0.5), 0 0 6px rgba(39,174,96,0.35); }
+    50% { box-shadow: 0 0 42px rgba(46,204,113,0.85), 0 0 18px rgba(46,204,113,0.55); }
+    100% { box-shadow: 0 0 12px rgba(39,174,96,0.5), 0 0 6px rgba(39,174,96,0.35); }
   }
 
   #progressBar.glow {
-    animation: glowPulse 2s infinite;
+    animation: glowPulse 1.8s ease-in-out 1;
+  }
+
+  .controls {
+    margin-top:14px;
   }
 
   button {
-    font-size: 26px;
-    padding: 16px 32px;
-    margin: 12px;
-    border: none;
-    border-radius: 10px;
-    background-color: #3498db;
-    color: white;
-    transition: background-color 0.3s;
+    font-size:16px;
+    padding:10px 18px;
+    margin:8px 8px 8px 0;
+    border:none;
+    border-radius:10px;
+    background:var(--button);
+    color:white;
+    cursor:pointer;
+    transition: background-color .18s, transform .05s;
+  }
+  button:active { transform: translateY(1px) scale(.998); }
+  button:hover { background: var(--button-hover); }
+
+  input[type="range"]{
+    width: 48%;
+    max-width:360px;
+    margin-top:10px;
   }
 
-  button:hover { background-color: #2980b9; cursor: pointer; }
-
+  /* Dark-mode button (we'll place it at bottom) */
   #darkToggle {
-    background-color: #555;
+    background:#666;
+    margin-top:20px;
+  }
+
+  /* small layout niceties for mobile */
+  @media (max-width:520px){
+    #mantraBox { font-size: 18px; line-height:1.8; }
+    #countDisplay { font-size:36px; }
+    button { padding:10px 14px; font-size:15px; margin:8px 6px 8px 0; }
+    input[type="range"]{ width: 92%; }
   }
 </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Krishna Mantra — Simple Counter</h1>
 
-<h2>Krishna Mantra</h2>
+    <img id="mantraImage" src="./mantra_image.webp" alt="Mantra Image">
 
-<button id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
+    <div id="countDisplay">0 / 108</div>
 
-<img id="mantraImage" src="./mantra_image.webp" alt="Mantra Image">
+    <div id="progressContainer">
+      <div id="progressBar">0%</div>
+    </div>
 
-<div id="countDisplay">0 / 108</div>
+    <div id="mantraBox">
+దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే
+దేహిమే తనయం కృష్ణ త్వమహం శరణం గతః
+    </div>
 
-<div id="progressContainer">
-  <div id="progressBar">0%</div>
-</div>
+    <!-- audio element for mantra -->
+    <audio id="mantraAudio" src="./Mantra.m4a" preload="auto"></audio>
 
-<div id="mantraBox"></div>
+    <div class="controls" aria-hidden="false">
+      <button onclick="startAuto()">Start</button>
+      <button id="pauseBtn" onclick="pauseResume()">Pause</button>
+      <button onclick="resetCounter()">Reset</button>
 
-<audio id="mantraAudio" src="./Mantra.m4a" preload="auto"></audio>
-<audio id="bellAudio" src="./bell.m4a" preload="auto"></audio>
+      <!-- simple volume slider controlling both audio & bell -->
+      <div style="margin-top:12px;">
+        <label style="margin-right:10px;">🔊 Volume</label>
+        <input id="volumeControl" type="range" min="0" max="1" step="0.01" value="1" oninput="changeVolume(this.value)">
+      </div>
+    </div>
 
-<button onclick="startAuto()">Start Audio</button>
-<button id="pauseBtn" onclick="pauseResume()">Pause</button>
-<button onclick="resetCounter()">Reset</button>
+    <!-- Dark toggle moved to bottom (separate from controls) -->
+    <div style="height:18px"></div>
+    <button id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
+  </div>
 
 <script>
+/* ------------------ Core state ------------------ */
 let count = 0;
 const total = 108;
-const mantra = "దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే \nదేహిమే తనయం కృష్ణ త్వమహం శరణం గతః";
-const audio = document.getElementById("mantraAudio");
 let isPaused = false;
+const mantra = "దేవకీసుత గోవిందా వాసుదేవ జగత్ పతే \nదేహిమే తనయం కృష్ణ త్వమహం శరణం గతః";
 
-function updateDisplay() {
-    document.getElementById("countDisplay").innerText = count + " / " + total;
-    document.getElementById("mantraBox").innerText = mantra;
+const colors = ["#fdf6e3","#fde2e2","#e3f6fd","#e2fde2","#f6e3fd","#fff7e6"];
+const fonts  = ["Arial, sans-serif","Georgia, serif","Tahoma, sans-serif","'Courier New', monospace","Verdana, sans-serif","Impact, sans-serif"];
 
-    let progressPercent = Math.round((count / total) * 100);
-    document.getElementById("progressBar").style.width = progressPercent + "%";
-    document.getElementById("progressBar").innerText = progressPercent + "%";
+const audio = document.getElementById('mantraAudio');
+const progressBar = document.getElementById('progressBar');
+const volumeControl = document.getElementById('volumeControl');
+
+/* ------------------ WebAudio bell (synth) ------------------ */
+let audioCtx = null;
+let bellGainNode = null;
+
+function ensureAudioContext(){
+  if (!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    bellGainNode = audioCtx.createGain();
+    bellGainNode.gain.value = 0.9; // default, multiplied by slider
+    bellGainNode.connect(audioCtx.destination);
+  }
 }
 
-function startAuto() {
-    if (count >= total) { alert("Completed 108!"); return; }
-    isPaused = false;
-    audio.play();
-    document.getElementById("pauseBtn").innerText = "Pause";
+/* gentle bell synth: FM-like pair of oscillators with quick decay */
+function playBell(){
+  try {
+    ensureAudioContext();
+    const now = audioCtx.currentTime;
+
+    // master gain respects slider
+    const vol = parseFloat(volumeControl.value);
+    bellGainNode.gain.cancelScheduledValues(now);
+    bellGainNode.gain.setValueAtTime(0.0, now);
+    bellGainNode.gain.linearRampToValueAtTime(0.9 * vol, now + 0.01);
+
+    // carrier oscillator
+    const carrier = audioCtx.createOscillator();
+    const carrierGain = audioCtx.createGain();
+    carrier.type = 'sine';
+    carrier.frequency.value = 660; // fundamental
+    carrierGain.gain.value = 1.0;
+
+    // modulator oscillator (fast), to create bell timbre
+    const mod = audioCtx.createOscillator();
+    const modGain = audioCtx.createGain();
+    mod.type = 'sine';
+    mod.frequency.value = 220;
+    modGain.gain.value = 80; // frequency modulation depth in Hz
+
+    // connect FM: mod -> modGain -> frequency of carrier
+    mod.connect(modGain);
+    modGain.connect(carrier.frequency);
+
+    // routing: carrier -> carrierGain -> bellGainNode -> destination
+    carrier.connect(carrierGain);
+    carrierGain.connect(bellGainNode);
+
+    // set envelopes
+    const dur = 2.2; // seconds total length of bell
+    carrierGain.gain.setValueAtTime(0.0001, now);
+    carrierGain.gain.exponentialRampToValueAtTime(1.0, now + 0.02);
+    carrierGain.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+
+    // start/stop
+    mod.start(now);
+    carrier.start(now);
+    carrier.stop(now + dur + 0.05);
+    mod.stop(now + dur + 0.05);
+
+    // ramp down master gain
+    bellGainNode.gain.exponentialRampToValueAtTime(0.0001, now + dur + 0.05);
+
+  } catch (err){
+    console.warn("Bell synth failed:", err);
+  }
 }
 
-function pauseResume() {
-    const btn = document.getElementById("pauseBtn");
-    if (!isPaused) {
-        audio.pause();
-        isPaused = true;
-        btn.innerText = "Resume";
-    } else {
-        audio.play();
-        isPaused = false;
-        btn.innerText = "Pause";
-    }
+/* ------------------ Helpers ------------------ */
+function updateDisplay(){
+  document.getElementById('countDisplay').innerText = `${count} / ${total}`;
+  document.getElementById('mantraBox').innerText = mantra;
+
+  const pct = Math.round((count / total) * 100);
+  progressBar.style.width = pct + "%";
+  progressBar.innerText = pct + "%";
+
+  // Only cycle colors/fonts in light mode
+  if (!document.body.classList.contains('dark')){
+    const color = colors[count % colors.length];
+    const font = fonts[count % fonts.length];
+    document.body.style.backgroundColor = color;
+    document.getElementById('countDisplay').style.fontFamily = font;
+    document.getElementById('mantraBox').style.fontFamily = font;
+  }
 }
 
-audio.addEventListener('ended', () => {
-    if (isPaused) return;
-    count++;
-    updateDisplay();
-
-    // glowing animation
-    document.getElementById("progressBar").classList.add("glow");
-
-    if (count < total) {
-        audio.currentTime = 0;
-        audio.play();
-    } else {
-        // gentle bell at 108
-        document.getElementById("bellAudio").play();
-        alert("You have completed all 108 repetitions!");
-    }
-});
-
-function resetCounter() {
+/* Start / Pause / Resume logic */
+function startAuto(){
+  if (count >= total) {
+    // if finished, reset to start a fresh cycle
     count = 0;
     updateDisplay();
+  }
+  isPaused = false;
+  // necessary on some mobile browsers: resume audio context on user gesture
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  audio.play().catch(()=>{ /* ignore play errors */ });
+  document.getElementById('pauseBtn').innerText = 'Pause';
+}
+
+function pauseResume(){
+  const btn = document.getElementById('pauseBtn');
+  if (!isPaused) {
+    isPaused = true;
     audio.pause();
-    audio.currentTime = 0;
+    btn.innerText = 'Resume';
+  } else {
     isPaused = false;
-    document.getElementById("pauseBtn").innerText = "Pause";
-
-    // remove glow
-    document.getElementById("progressBar").classList.remove("glow");
+    audio.play().catch(()=>{});
+    btn.innerText = 'Pause';
+  }
 }
 
-function toggleDarkMode() {
-    document.body.classList.toggle("dark");
+/* When the mantra audio ends, increment and continue */
+audio.addEventListener('ended', () => {
+  if (isPaused) return;
+
+  count++;
+  updateDisplay();
+
+  // visual glow: add class and remove shortly after so it pulses visibly
+  progressBar.classList.add('glow');
+  setTimeout(()=> progressBar.classList.remove('glow'), 1800);
+
+  // vibrate briefly on supported devices
+  if (navigator.vibrate) {
+    try { navigator.vibrate(40); } catch(e) { /* ignore */ }
+  }
+
+  if (count < total) {
+    audio.currentTime = 0;
+    audio.play().catch(()=>{});
+  } else {
+    // Completed 108: play gentle synthesized bell
+    // Start/resume audioContext if needed
+    try {
+      ensureAudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch(e){ /* ignore */ }
+    playBell();
+    // small visual final glow longer
+    progressBar.classList.add('glow');
+    setTimeout(()=> progressBar.classList.remove('glow'), 2800);
+
+    // final message (non-blocking)
+    setTimeout(()=> alert("You have completed all 108 repetitions!"), 350);
+  }
+});
+
+/* Reset */
+function resetCounter(){
+  count = 0;
+  updateDisplay();
+  audio.pause();
+  audio.currentTime = 0;
+  isPaused = false;
+  document.getElementById('pauseBtn').innerText = 'Pause';
+  progressBar.classList.remove('glow');
 }
+
+/* Volume slider affects audio element and bell synth master gain */
+function changeVolume(v){
+  const vol = parseFloat(v);
+  audio.volume = vol;
+  if (bellGainNode) {
+    try {
+      bellGainNode.gain.setValueAtTime(0.9 * vol, audioCtx.currentTime || 0);
+    } catch(e){ /* ignore */ }
+  }
+}
+
+/* Dark Mode toggle (bottom) */
+function toggleDarkMode(){
+  document.body.classList.toggle('dark');
+  // ensure light-mode color cycling applies immediately when toggled off
+  updateDisplay();
+}
+
+/* Make sure initial UI is set */
+updateDisplay();
+
+/* On first user gesture: resume audioContext for bell on mobile when needed */
+document.addEventListener('click', function firstGesture(){
+  try {
+    ensureAudioContext();
+    // set bell gain initially to slider value
+    bellGainNode.gain.setValueAtTime(0.9 * parseFloat(volumeControl.value), audioCtx.currentTime || 0);
+  } catch(e){}
+  document.removeEventListener('click', firstGesture);
+});
 </script>
-
 </body>
 </html>
