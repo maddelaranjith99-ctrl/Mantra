@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Krishna Mantra </title>
+<title>Krishna Mantra — Final</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
   :root{
@@ -13,6 +13,7 @@
     --bg:#fdf6e3;
   }
 
+  /* ---------- Base (Light) ---------- */
   body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     text-align: center;
@@ -23,12 +24,6 @@
     background-color: var(--bg);
     color: var(--text);
     transition: background-color 0.5s, color 0.4s, font-family 0.4s;
-  }
-
-  /* Dark mode */
-  body.dark {
-    background-color: #0e0e10;     /* dark bg */
-    color: #e9eef2;                /* light text */
   }
 
   .container {
@@ -131,6 +126,38 @@
   #darkToggle {
     background:#666;
     margin-top:20px;
+  }
+
+  /* ---------- Strong Dark Mode Overrides ---------- */
+  body.dark {
+    background-color: #0e0e10 !important;
+    color: #e9eef2 !important;
+  }
+
+  body.dark #countDisplay,
+  body.dark #mantraBox {
+    color: #e9eef2 !important;
+  }
+
+  body.dark button {
+    background-color: #444 !important;
+    color: #fff !important;
+  }
+
+  body.dark button:hover {
+    background-color: #666 !important;
+  }
+
+  body.dark #progressContainer {
+    background-color: #222 !important;
+    box-shadow: none !important;
+  }
+
+  /* Use a muted progress color in dark mode (contrasting text) */
+  body.dark #progressBar {
+    background: linear-gradient(90deg,#6aa86a,#4f8a4f) !important;
+    color: #000 !important;
+    box-shadow: inset 0 -4px 10px rgba(255,255,255,0.02) !important;
   }
 
   /* small layout niceties for mobile */
@@ -273,6 +300,7 @@ function updateDisplay(){
   if (!document.body.classList.contains('dark')){
     const color = colors[count % colors.length];
     const font = fonts[count % fonts.length];
+    // apply inline light-mode color/font
     document.body.style.backgroundColor = color;
     document.getElementById('countDisplay').style.fontFamily = font;
     document.getElementById('mantraBox').style.fontFamily = font;
@@ -327,7 +355,6 @@ audio.addEventListener('ended', () => {
     audio.play().catch(()=>{});
   } else {
     // Completed 108: play gentle synthesized bell
-    // Start/resume audioContext if needed
     try {
       ensureAudioContext();
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -357,18 +384,27 @@ function resetCounter(){
 function changeVolume(v){
   const vol = parseFloat(v);
   audio.volume = vol;
-  if (bellGainNode) {
+  if (bellGainNode && audioCtx) {
     try {
       bellGainNode.gain.setValueAtTime(0.9 * vol, audioCtx.currentTime || 0);
     } catch(e){ /* ignore */ }
   }
 }
 
-/* Dark Mode toggle (bottom) */
+/* Dark Mode toggle (bottom) — FIXED to avoid being overridden by color-cycling */
 function toggleDarkMode(){
-  document.body.classList.toggle('dark');
-  // ensure light-mode color cycling applies immediately when toggled off
-  updateDisplay();
+  const isDark = document.body.classList.toggle('dark');
+
+  if (isDark) {
+    // force dark inline background to avoid flicker from updateDisplay()
+    document.body.style.backgroundColor = "#0e0e10";
+    // reset any inline font-family so dark mode uses default legible fonts
+    document.getElementById('countDisplay').style.fontFamily = "";
+    document.getElementById('mantraBox').style.fontFamily = "";
+  } else {
+    // return to light-mode auto cycling — updateDisplay will reapply light colors
+    updateDisplay();
+  }
 }
 
 /* Make sure initial UI is set */
@@ -379,7 +415,7 @@ document.addEventListener('click', function firstGesture(){
   try {
     ensureAudioContext();
     // set bell gain initially to slider value
-    bellGainNode.gain.setValueAtTime(0.9 * parseFloat(volumeControl.value), audioCtx.currentTime || 0);
+    if (bellGainNode && audioCtx) bellGainNode.gain.setValueAtTime(0.9 * parseFloat(volumeControl.value), audioCtx.currentTime || 0);
   } catch(e){}
   document.removeEventListener('click', firstGesture);
 });
